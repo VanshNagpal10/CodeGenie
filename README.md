@@ -1,7 +1,7 @@
 # CodeGenie: Your Personalized AI Coding Coach
 
 <p align="center">
-  <img src="public/file.svg" alt="CodeGenie Logo" width="100" height="100">
+  <img src="public/ui.png" alt="CodeGenie Logo" width="100" height="100">
 </p>
 
 ## 🚀 Overview
