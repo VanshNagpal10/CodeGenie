@@ -109,13 +109,13 @@ Be encouraging, specific, and actionable. Do NOT provide generic advice. Only re
     // Add assistant response to history
     conversationHistory.push({ role: "assistant", content: aiReply });
 
-    console.log("📩 Code analyzed for:", { problemType, difficulty, platform, goal });
+    console.log("Code analyzed for:", { problemType, difficulty, platform, goal });
     return NextResponse.json({ reply: aiReply });
 
   } catch (error: any) {
     console.error("OpenAI API error:", error);
 
-    let errorMessage = "⚠️ AI request failed. Please try again.";
+    let errorMessage = "AI request failed. Please try again.";
     if (error instanceof OpenAI.APIError) {
       errorMessage = `API Error: ${error.status} - ${error.message}`;
     } else if (!process.env.OPENAI_API_KEY) {
