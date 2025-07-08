@@ -1,10 +1,10 @@
 "use client";
-import React from "react";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Code } from "lucide-react";
+import { MessageCircle, MoreVertical, Code, BookOpen, GraduationCap } from "lucide-react";
 import Link from 'next/link';
+import { useRouter } from "next/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +16,49 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Helper functions for API calls
+async function loadChatHistory(userId: string) {
+  try {
+    const response = await fetch(`/api/history?userId=${userId}`);
+    const data = await response.json();
+    return data.history || [];
+  } catch (error) {
+    console.error("Failed to load chat history:", error);
+    return [];
+  }
+}
+
+async function saveMessageToHistory(userId: string, role: string, content: string) {
+  try {
+    await fetch("/api/history", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId,
+        role,
+        content,
+        timestamp: new Date().toISOString(),
+      }),
+    });
+  } catch (error) {
+    console.error("Failed to save message to history:", error);
+  }
+}
+
+async function initializeUser(userId: string) {
+  try {
+    await fetch("/api/initUser", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId }),
+    });
+  } catch (error) {
+    console.error("Failed to initialize user:", error);
+  }
+}
+
 export default function CodeAnalysisChat() {
+  const [userId, setUserId] = useState<string | null>(null);
   const [messages, setMessages] = useState<
     { sender: "user" | "ai"; text: string }[]
   >([]);
@@ -27,13 +69,76 @@ export default function CodeAnalysisChat() {
   const [platform, setPlatform] = useState("leetcode");
   const [goal, setGoal] = useState("interview");
 
+  // Analysis modal state
+  const [analysis, setAnalysis] = useState<string | null>(null);
+  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
+
+  const router = useRouter();
+
+  // First-run userId initialization
+  useEffect(() => {
+    const initializeUserId = async () => {
+      if (typeof window === "undefined") return;
+      
+      let storedUserId = localStorage.getItem("userId");
+      
+      if (!storedUserId) {
+        const userInput = prompt("Please enter your name or ID to continue:");
+        if (userInput && userInput.trim()) {
+          storedUserId = userInput.trim();
+          localStorage.setItem("userId", storedUserId);
+        } else {
+          // Fallback to anonymous user if prompt is cancelled
+          storedUserId = "anonymous-" + Date.now();
+          localStorage.setItem("userId", storedUserId);
+        }
+      }
+      
+      setUserId(storedUserId);
+      
+      // Initialize user in backend
+      await initializeUser(storedUserId);
+    };
+    
+    initializeUserId();
+  }, []);
+
+  // Load chat history for the current user on mount
+  useEffect(() => {
+    if (!userId) return;
+    const loadHistory = async () => {
+      try {
+        const res = await fetch(`/api/history?userId=${userId}`);
+        const data = await res.json();
+        if (data.history && Array.isArray(data.history)) {
+          const restored = data.history.map((msg: any) => ({
+            sender: msg.sender || (msg.role === "user" ? "user" : "ai"),
+            text: msg.text || msg.content,
+          }));
+          setMessages(restored);
+          console.log(`[Chat] Loaded ${restored.length} messages for userId: ${userId}`);
+        } else {
+          setMessages([]);
+          console.log(`[Chat] No history found for userId: ${userId}`);
+        }
+      } catch (err) {
+        setMessages([]);
+        console.log(`[Chat] Error loading history for userId: ${userId}`);
+      }
+    };
+    loadHistory();
+  }, [userId]);
+
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || !userId) return;
 
     const userMsg: { sender: "user"; text: string } = {
       sender: "user",
       text: input,
     };
+    
+    // Save user message to history
+    await saveMessageToHistory(userId, "user", input);
     setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
 
@@ -41,6 +146,7 @@ export default function CodeAnalysisChat() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        userId,
         userMessage: input,
         problemType,
         difficulty,
@@ -55,9 +161,75 @@ export default function CodeAnalysisChat() {
       text: data.reply,
     };
 
-    setMessages((prev) => [...prev, aiMsg]);
+    // Save AI message to history
+    await saveMessageToHistory(userId, "assistant", data.reply);
+    const updatedMessages = [...messages, userMsg, aiMsg];
+    setMessages(updatedMessages);
+
+    const n8nWebhookURL = "http://localhost:5678/webhook-test/analyze-dashboard"; 
+    const userIdParam = `?userId=${userId}`;
+    const fullWebhookURL = `${n8nWebhookURL}${userIdParam}`;
+
+    // 👇 Send chat to n8n after receiving AI response
+    try {
+      await fetch(fullWebhookURL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ history: updatedMessages, userId }),
+      });
+    } catch (err) {
+      // Optionally handle error (e.g., log or ignore)
+      // console.error('Failed to send chat to n8n:', err);
+    }
     setInput("");
     setLoading(false);
+  };
+
+  const resetChat = async () => {
+    if (!userId) return;
+    
+    setMessages([]);
+    // Clear history by setting empty array
+    try {
+      await fetch("/api/history", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          role: "system",
+          content: "RESET",
+          timestamp: new Date().toISOString(),
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to reset chat history:", error);
+    }
+    
+    await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resetConversation: true }),
+    });
+  };
+
+  // Handler for dashboard analysis button
+  const handleShowAnalysis = async () => {
+    if (!userId) return;
+    setLoadingAnalysis(true);
+    try {
+      const res = await fetch(`/api/analyze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId }),
+      });
+      const data = await res.json();
+      setAnalysis(data.analysis || "No analysis available.");
+    } catch (err) {
+      console.error("❌ Error fetching analysis:", err);
+      setAnalysis("Failed to load analysis.");
+    } finally {
+      setLoadingAnalysis(false);
+    }
   };
 
   const renderMessage = (msg: { sender: "user" | "ai"; text: string }) => {
@@ -86,18 +258,21 @@ export default function CodeAnalysisChat() {
 
   return (
     <div className={`${geistSans.variable} ${geistMono.variable} antialiased flex h-screen bg-zinc-950 text-white overflow-hidden`}>
+      {/* Dashboard button in top right */}
+      <div className="absolute top-4 right-4">
+        <button
+          onClick={() => router.push("/dashboard")}
+          className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
+          title="View Analysis"
+        >
+          🧠
+        </button>
+      </div>
       <aside className="w-64 bg-zinc-900 p-4 flex flex-col border-r border-zinc-800">
         <div className="mb-6">
           <Link href={'/'} className="text-2xl font-bold"><h2 className="text-2xl font-bold text-blue-400"><Code className="mr-2 h-8 w-8 inline-block" />CodeGenie</h2></Link>
           <button
-            onClick={async () => {
-              setMessages([]);
-              await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ resetConversation: true }),
-              });
-            }}
+            onClick={resetChat}
             className="mt-4 w-full bg-zinc-800 hover:bg-zinc-700 text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             🔄 {messages.length > 0 ? "Reset Chat" : "New Session"}
@@ -210,12 +385,7 @@ export default function CodeAnalysisChat() {
               <button
                 onClick={sendMessage}
                 disabled={loading || !input.trim()}
-                className="ml-auto bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    sendMessage();
-                  }
-                }}
+                className="ml-auto bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
               >
                 {messages.length ? "Send" : "Analyze Code"}
               </button>
@@ -223,6 +393,33 @@ export default function CodeAnalysisChat() {
           </div>
         </footer>
       </main>
+      {/* Analysis Modal */}
+      {analysis !== null && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl max-w-xl w-full p-6 relative shadow-lg overflow-auto max-h-[80vh]">
+            <button
+              className="absolute top-2 right-2 text-xl"
+              onClick={() => setAnalysis(null)}
+            >
+              ✖️
+            </button>
+            <h2 className="text-xl font-bold mb-2">📊 AI Analysis</h2>
+            {loadingAnalysis ? (
+              <p>Loading...</p>
+            ) : (
+              <div className="prose prose-sm whitespace-pre-wrap">
+                {typeof analysis === "string" ? (
+                  <div dangerouslySetInnerHTML={{ __html: analysis.replace(/\n/g, "<br/>") }} />
+                ) : analysis && typeof analysis === "object" && "summary" in analysis ? (
+                  <div>{analysis.summary}</div>
+                ) : (
+                  <div>{JSON.stringify(analysis)}</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { Code, BookOpen, Zap, Users, Trophy } from "lucide-react";
+import { MessageCircle, MoreVertical, Code, BookOpen, GraduationCap, Zap, Users, Trophy } from "lucide-react";
 import Link from 'next/link';
 
 export default function Navbar() {
@@ -16,13 +16,13 @@ export default function Navbar() {
   }, []);
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300
-  ${scrolled 
-    ? 'bg-black/70 backdrop-blur-xl border-b border-white/10' 
-    : 'bg-transparent'}
-  h-20
-`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      scrolled 
+        ? 'bg-black/80 backdrop-blur-xl border-b border-white/10' 
+        : 'bg-transparent'
+    }`}>
       <div className="flex justify-between items-center px-6 py-4 max-w-7xl mx-auto">
+        {/* Enhanced Logo */}
         <Link 
           href="/" 
           className="text-2xl font-bold text-white hover:text-blue-400 transition-colors duration-300 flex items-center group"
@@ -62,13 +62,13 @@ export default function Navbar() {
           
           {/* CTA Button */}
           <Link href="/ai">
-            <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25 cursor-pointer ">
+            <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-full font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-500/25">
               Get Started
             </button>
           </Link>
         </div>
 
-
+        {/* Enhanced Mobile Menu Button */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className={`md:hidden bg-gradient-to-r from-blue-600 to-purple-600 text-white flex items-center gap-2 px-5 py-2 rounded-full font-bold justify-between transition-all duration-300 transform hover:scale-105 shadow-lg ${
@@ -88,12 +88,14 @@ export default function Navbar() {
           </span>
         </button>
 
+        {/* Enhanced Mobile Menu */}
         {menuOpen && (
           <div
             className={`md:hidden absolute top-20 right-6 bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl px-6 py-8 w-80 flex flex-col gap-1 text-lg font-medium z-50 transition-all duration-300 ease-out ${
               menuOpen ? "translate-x-0 opacity-100 scale-100" : "translate-x-full opacity-0 scale-95"
             }`}
           >
+            {/* Menu Header */}
             <div className="pb-4 mb-4 border-b border-white/10">
               <div className="flex items-center gap-2 text-white">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
@@ -101,6 +103,7 @@ export default function Navbar() {
               </div>
             </div>
 
+            {/* Menu Items */}
             <Link 
               href="/" 
               className="text-white px-4 py-3 rounded-lg hover:bg-white/10 transition-all duration-200 flex items-center gap-3 group"
