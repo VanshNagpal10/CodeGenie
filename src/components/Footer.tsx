@@ -39,9 +39,9 @@ export default function Footer() {
               {/* Social Links */}
               <div className="flex space-x-4 pt-4">
                 {[
-                  { icon: Github, href: "https://github.com", label: "GitHub" },
+                  { icon: Github, href: "https://github.com/VanshNagpal10/CodeGenie", label: "GitHub" },
                   { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
-                  { icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" }
+                  { icon: Linkedin, href: "https://www.linkedin.com/in/vanshnagpal27/", label: "LinkedIn" }
                 ].map((social, index) => (
                   <Link 
                     key={index}
@@ -197,7 +197,7 @@ export default function Footer() {
               <span>Made with</span>
               <div className="flex items-center gap-1">
                 <span className="text-red-400 animate-pulse">❤️</span>
-                <span>by developers, for developers</span>
+                <span>by Code Genius</span>
               </div>
             </div>
           </div>

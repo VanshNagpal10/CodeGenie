@@ -32,7 +32,7 @@ export function Button({
   return (
     <Component
       className={cn(
-        "relative h-16 w-40 overflow-hidden bg-transparent p-[1px] text-xl",
+        "relative bg-transparent p-[1px] text-xl",
         containerClassName,
       )}
       style={{
@@ -41,7 +41,7 @@ export function Button({
       {...otherProps}
     >
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 overflow-hidden"
         style={{ borderRadius: `calc(${borderRadius} * 0.96)` }}
       >
         <MovingBorder duration={duration} rx="30%" ry="30%">

@@ -25,7 +25,6 @@ export default function AILayout({
   return (
     <html lang="en" className="dark">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {/* Intentionally not including the Navbar component */}
         {children}
       </body>
     </html>

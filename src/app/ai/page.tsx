@@ -210,7 +210,12 @@ export default function CodeAnalysisChat() {
               <button
                 onClick={sendMessage}
                 disabled={loading || !input.trim()}
-                className="ml-auto bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
+                className="ml-auto bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    sendMessage();
+                  }
+                }}
               >
                 {messages.length ? "Send" : "Analyze Code"}
               </button>
