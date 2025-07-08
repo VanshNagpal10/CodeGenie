@@ -22,17 +22,17 @@ export function Button({
 }: {
   borderRadius?: string;
   children: React.ReactNode;
-  as?: React.ElementType;
+  as?: any;
   containerClassName?: string;
   borderClassName?: string;
   duration?: number;
   className?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }) {
   return (
     <Component
       className={cn(
-        "relative bg-transparent p-[1px] text-xl",
+        "relative h-16 w-40 overflow-hidden bg-transparent p-[1px] text-xl",
         containerClassName,
       )}
       style={{
@@ -41,7 +41,7 @@ export function Button({
       {...otherProps}
     >
       <div
-        className="absolute inset-0 overflow-hidden"
+        className="absolute inset-0"
         style={{ borderRadius: `calc(${borderRadius} * 0.96)` }}
       >
         <MovingBorder duration={duration} rx="30%" ry="30%">
@@ -80,9 +80,9 @@ export const MovingBorder = ({
   duration?: number;
   rx?: string;
   ry?: string;
-  [key: string]: unknown;
+  [key: string]: any;
 }) => {
-  const pathRef = useRef<SVGRectElement | null>(null);
+  const pathRef = useRef<any>(null);
   const progress = useMotionValue<number>(0);
 
   useAnimationFrame((time) => {
