@@ -112,7 +112,7 @@ Be encouraging, specific, and actionable. Do NOT provide generic advice. Only re
     console.log("Code analyzed for:", { problemType, difficulty, platform, goal });
     return NextResponse.json({ reply: aiReply });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("OpenAI API error:", error);
 
     let errorMessage = "AI request failed. Please try again.";
