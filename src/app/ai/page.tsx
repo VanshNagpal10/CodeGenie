@@ -3,7 +3,7 @@ import React from "react";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Geist, Geist_Mono } from "next/font/google";
-import { MessageCircle, MoreVertical, Code, BookOpen, GraduationCap } from "lucide-react";
+import { Code } from "lucide-react";
 import Link from 'next/link';
 
 const geistSans = Geist({

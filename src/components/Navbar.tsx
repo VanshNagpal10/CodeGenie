@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, MoreVertical, Code, BookOpen, GraduationCap, Zap, Users, Trophy } from "lucide-react";
+import { Code, BookOpen, Zap, Users, Trophy } from "lucide-react";
 import Link from 'next/link';
 
 export default function Navbar() {
