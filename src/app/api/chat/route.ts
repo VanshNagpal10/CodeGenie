@@ -98,9 +98,9 @@ Be encouraging, specific, and actionable. Do NOT provide generic advice. Only re
     ] as { role: MessageRole; content: string }[];
 
     const chatCompletion = await openai.chat.completions.create({
-      model: "gpt-4.1-mini", // or "gpt-3.5-turbo" for faster/cheaper demo
+      model: "gpt-4.1-mini", 
       messages,
-      temperature: 0.7, // Reduced for more consistent formatting
+      temperature: 0.7, 
       max_tokens: 4096,
     });
 
