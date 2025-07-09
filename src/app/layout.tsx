@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CodeCoach - Personalized Learning Recommender",
-  description: "Your AI-powered coding coach for personalized learning recommendations and interview preparation",
+  title: "CodeGenie: Your Personalized DSA Mentor",
+  description: "Supercharge your coding journey with AI-driven personalized learning paths, expert interview prep, and tailored recommendations to help you achieve your tech career goals.",
 };
 
 export default function RootLayout({
